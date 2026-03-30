@@ -28,16 +28,44 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           themeMode: themeProvider.themeMode,
           theme: ThemeData(
-            primarySwatch: Colors.blue,
-            brightness: Brightness.light,
-            scaffoldBackgroundColor: Colors.grey[100],
             useMaterial3: true,
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color(0xFF673AB7),
+              brightness: Brightness.light,
+              surface: Colors.white,
+              onSurface: const Color(0xFF1D1B20),
+            ),
+            scaffoldBackgroundColor: const Color(0xFFF8F9FA),
+            appBarTheme: const AppBarTheme(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              centerTitle: true,
+              titleTextStyle: TextStyle(
+                color: Color(0xFF1D1B20),
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
           darkTheme: ThemeData(
-            primarySwatch: Colors.blue,
-            brightness: Brightness.dark,
-             scaffoldBackgroundColor: const Color(0xFF1E1E1E),
-             useMaterial3: true,
+            useMaterial3: true,
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color(0xFFD0BCFF),
+              brightness: Brightness.dark,
+              surface: const Color(0xFF1C1B1F),
+              onSurface: const Color(0xFFE6E1E5),
+            ),
+            scaffoldBackgroundColor: const Color(0xFF121212),
+            appBarTheme: const AppBarTheme(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              centerTitle: true,
+              titleTextStyle: TextStyle(
+                color: Color(0xFFE6E1E5),
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
           home: const SplashScreen(),
         );
