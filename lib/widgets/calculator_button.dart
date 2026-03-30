@@ -7,6 +7,8 @@ class CalculatorButton extends StatelessWidget {
   final Color? textColor;
   final double fontSize;
   final int flex;
+  final bool isIcon;
+  final IconData? icon;
 
   const CalculatorButton({
     Key? key,
@@ -14,32 +16,44 @@ class CalculatorButton extends StatelessWidget {
     required this.onPressed,
     this.backgroundColor,
     this.textColor,
-    this.fontSize = 24.0,
+    this.fontSize = 22.0,
     this.flex = 1,
+    this.isIcon = false,
+    this.icon,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+
+    Color bg = backgroundColor ?? (isDark ? colorScheme.surfaceContainerHighest : colorScheme.surface);
+    Color textCol = textColor ?? colorScheme.onSurface;
+
     return Expanded(
       flex: flex,
       child: Padding(
-        padding: const EdgeInsets.all(4.0),
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: backgroundColor ?? Theme.of(context).cardColor,
-            foregroundColor: textColor ?? Theme.of(context).textTheme.bodyLarge?.color,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            padding: const EdgeInsets.all(16),
-            elevation: 2,
-          ),
-          onPressed: onPressed,
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: fontSize,
-              fontWeight: FontWeight.bold,
+        padding: const EdgeInsets.all(6.0),
+        child: Material(
+          color: bg,
+          elevation: isDark ? 0 : 2,
+          shadowColor: Colors.black26,
+          borderRadius: BorderRadius.circular(24),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onPressed,
+            child: Center(
+              child: isIcon && icon != null
+                  ? Icon(icon, color: textCol, size: 28)
+                  : Text(
+                      label,
+                      style: TextStyle(
+                        color: textCol,
+                        fontSize: fontSize,
+                        fontWeight: FontWeight.w500,
+                        fontFamily: 'RobotoMono', // If available, or just default
+                      ),
+                    ),
             ),
           ),
         ),

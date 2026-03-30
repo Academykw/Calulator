@@ -1,27 +1,38 @@
-
 import 'package:flutter/foundation.dart';
 import 'package:math_expressions/math_expressions.dart';
 import 'dart:math' as math;
+
+class HistoryItem {
+  final String expression;
+  final String result;
+  final DateTime timestamp;
+
+  HistoryItem({required this.expression, required this.result, required this.timestamp});
+}
 
 class CalculatorProvider with ChangeNotifier {
   String _expression = '';
   String _result = '0';
   bool _justEvaluated = false;
+  final List<HistoryItem> _history = [];
 
   String get expression => _expression;
   String get result => _result;
+  List<HistoryItem> get history => List.unmodifiable(_history);
 
   void addToExpression(String value) {
     if (_justEvaluated) {
-      // If user starts typing a number immediately after result, cleared?
-      // Or just appended?
-      // User said: "if not the former addition will be used".
-      // Usually calculators reset if number, append if operator.
-      // But let's stick to the specific request about Equation Sign first.
-      // For now, I will just reset the flag so normal appending happens.
+      // If it's a number, start fresh expression
+      if (RegExp(r'^[0-9.]+$').hasMatch(value)) {
+        _expression = value;
+      } else {
+        // If it's an operator, append to result
+        _expression = _result + value;
+      }
       _justEvaluated = false;
+    } else {
+      _expression += value;
     }
-    _expression += value;
     notifyListeners();
   }
 
@@ -41,46 +52,51 @@ class CalculatorProvider with ChangeNotifier {
   }
 
   void evaluate() {
-    if (_justEvaluated) {
-      // User pressed = again immediately.
-      // Move result to expression to allow continuing configuration
-      if (_result != 'Error') {
-        _expression = _result;
-        // _result = ''; // Optional: clear result or keep it?
-        // Keeping it is fine, but visually maybe better to just show it in expression.
-        // Let's keep it in result too, but now expression is "4".
-        // If they press + it becomes 4+.
-      }
-      _justEvaluated = false;
-      notifyListeners();
-      return;
-    }
+    if (_expression.isEmpty) return;
 
     try {
-      Parser p = Parser();
-      // Replace visual symbols with supported operators if needed
-      // e.g. '×' -> '*', '÷' -> '/'
       String finalExpression = _expression
           .replaceAll('×', '*')
           .replaceAll('÷', '/')
           .replaceAll('π', '3.14159265')
           .replaceAll('e', '2.71828182');
 
+      Parser p = Parser();
       Expression exp = p.parse(finalExpression);
       ContextModel cm = ContextModel();
       double eval = exp.evaluate(EvaluationType.REAL, cm);
 
-      // Simple formatting to remove trailing .0
+      String evalStr;
       if (eval % 1 == 0) {
-        _result = eval.toInt().toString();
+        evalStr = eval.toInt().toString();
       } else {
-        _result = eval.toString();
+        evalStr = eval.toStringAsFixed(8).replaceFirst(RegExp(r'0+$'), '').replaceFirst(RegExp(r'\.$'), '');
       }
+
+      _history.insert(0, HistoryItem(
+        expression: _expression,
+        result: evalStr,
+        timestamp: DateTime.now(),
+      ));
+
+      _result = evalStr;
       _justEvaluated = true;
     } catch (e) {
       _result = 'Error';
       _justEvaluated = false;
     }
+    notifyListeners();
+  }
+
+  void clearHistory() {
+    _history.clear();
+    notifyListeners();
+  }
+
+  void useHistoryItem(HistoryItem item) {
+    _expression = item.expression;
+    _result = item.result;
+    _justEvaluated = true;
     notifyListeners();
   }
 }
